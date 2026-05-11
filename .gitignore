@@ -1,0 +1,5 @@
+books/*
+!books/.gitkeep
+!books/pg43.txt
+__pycache__/
+*.pyc

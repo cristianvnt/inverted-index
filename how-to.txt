@@ -1,0 +1,69 @@
+# Inverted Index - Hadoop Setup
+
+## Prerequisites
+- Docker Desktop installed with WSL2 backend
+- Ubuntu WSL2 distro with Docker integration enabled
+- VS Code with WSL extension (optional)
+
+## First time setup
+
+### 1. Clone the Hadoop repo
+```bash
+git clone <repo-url> hadoop-docker
+cd hadoop-docker
+```
+
+### 2. Build the base image
+```bash
+cd base
+docker build -t asergiu/ubb:hadoop-base .
+cd ..
+```
+
+### 3. Build all images
+```bash
+docker compose build
+```
+
+### 4. Start the cluster
+```bash
+docker compose up -d
+```
+
+Wait ~30 seconds, then verify at http://localhost:9870
+- Click Datanodes tab — should show 3 live nodes
+
+### 5. Setup the inverted index
+```bash
+cd ~/inverted-index
+./setup.sh
+```
+
+## Running the job
+```bash
+./run.sh
+```
+
+## Stopping the cluster
+```bash
+cd ~/hadoop-docker
+docker compose down
+```
+
+## Restarting the cluster
+```bash
+docker compose up -d
+# wait for safemode to clear (~30 seconds)
+./setup.sh  # re-copy files since containers are fresh
+./run.sh
+```
+
+## Changes made to the original repo
+- `base/Dockerfile` — fixed Hadoop download URL from `/stable/` to version-specific path
+- `base/Dockerfile` — added `python3` to apt install
+- `docker-compose.yml` — uncommented datanode2 and datanode3
+- `docker-compose.yml` — added port 8088 to resourcemanager
+- `docker-compose.yml` — fixed nodemanager SERVICE_PRECONDITION (removed nonexistent `datanode:9864`)
+- `hadoop.env` — fixed HADOOP_MAPRED_HOME from 3.3.5 to 3.4.0
+- `hadoop.env` — reduced reduce memory from 8192 to 2048 to fit single-machine Docker setup
+- `hadoop.env` — reduced map memory to 2048 for same reason
